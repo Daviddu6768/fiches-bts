@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiches BTS — Générateur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: oklch(97.5% 0.006 75);
+    --bg2: oklch(99% 0.003 75);
+    --text: oklch(18% 0.008 260);
+    --text-mid: oklch(42% 0.008 260);
+    --text-light: oklch(62% 0.008 260);
+    --accent: oklch(52% 0.13 255);
+    --accent-warm: oklch(56% 0.12 30);
+    --border: oklch(90% 0.006 260);
+    --card: oklch(100% 0 0);
+    --shadow: 0 2px 20px oklch(18% 0.008 260 / 0.07), 0 1px 4px oklch(18% 0.008 260 / 0.04);
+    --shadow-lg: 0 8px 48px oklch(18% 0.008 260 / 0.10), 0 2px 8px oklch(18% 0.008 260 / 0.05);
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root { min-height: 100vh; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+  .fade-in { animation: fadeIn 0.4s ease both; }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    gap: 0;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .hero-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 400;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    animation: fadeUp 0.5s 0.05s ease both;
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 52px;
+    animation: fadeUp 0.5s 0.1s ease both;
+    line-height: 1.6;
+  }
+
+  .search-wrap {
+    width: 100%;
+    max-width: 580px;
+    animation: fadeUp 0.5s 0.15s ease both;
+    position: relative;
+  }
+
+  .search-box {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    box-shadow: var(--shadow-lg);
+    padding: 6px 6px 6px 28px;
+    gap: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px oklch(52% 0.13 255 / 0.10), var(--shadow-lg);
+  }
+
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--text);
+    min-width: 0;
+  }
+  .search-input::placeholder { color: var(--text-light); font-weight: 300; }
+
+  .search-btn {
+    flex-shrink: 0;
+    background: var(--text);
+    color: var(--bg2);
+    border: none;
+    border-radius: 100px;
+    padding: 13px 26px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .search-btn:hover { background: var(--accent); transform: scale(1.02); }
+  .search-btn:active { transform: scale(0.98); }
+  .search-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  /* ─── SUGGESTIONS ─── */
+  .suggestions {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+  .suggestion-chip {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .suggestion-chip:hover {
+    border-color: var(--text-mid);
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  /* ─── LOADING ─── */
+  .loading-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  .loading-msg {
+    font-size: 15px;
+    color: var(--text-light);
+    animation: pulse 1.8s ease infinite;
+  }
+
+  /* ─── SHEET ─── */
+  .sheet-page {
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sheet-back {
+    align-self: flex-start;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto 36px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--text-mid);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .sheet-back:hover { color: var(--accent); }
+  .sheet-back svg { transition: transform 0.2s; }
+  .sheet-back:hover svg { transform: translateX(-3px); }
+
+  .sheet-card {
+    width: 100%;
+    max-width: 860px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: scaleIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .sheet-header {
+    padding: 52px 60px 44px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sheet-genre-badge {
+    display: inline-flex;
+    align-items: center;
+    background: oklch(52% 0.13 255 / 0.08);
+    color: var(--accent);
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+
+  .sheet-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(28px, 4.5vw, 48px);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-top: 8px;
+  }
+
+  .sheet-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .sheet-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-mid);
+    font-weight: 400;
+  }
+  .sheet-meta-dot {
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .sheet-body {
+    padding: 0 60px;
+  }
+
+  .sheet-section {
+    padding: 36px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sheet-section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 14px;
+  }
+
+  .section-text {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.75;
+    text-wrap: pretty;
+  }
+
+  .quote-block {
+    border-left: 2px solid var(--accent);
+    padding: 6px 0 6px 28px;
+    margin-top: 4px;
+  }
+  .quote-text {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(17px, 2.5vw, 22px);
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .quote-attr {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 400;
+  }
+
+  .animal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: oklch(56% 0.12 30 / 0.07);
+    color: var(--accent-warm);
+    border-radius: var(--radius-sm);
+    padding: 3px 10px 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .source-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .source-link:hover {
+    border-color: var(--accent);
+    background: oklch(52% 0.13 255 / 0.04);
+  }
+  .source-icon {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    color: var(--accent);
+    margin-top: 1px;
+  }
+  .source-text {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  /* ─── THEME PICKER ─── */
+  .theme-bar {
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .theme-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-light);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px 6px 8px;
+    border-radius: 100px;
+    border: 1.5px solid transparent;
+    background: var(--card);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    box-shadow: 0 1px 4px oklch(18% 0.008 260 / 0.06);
+  }
+  .theme-btn:hover { border-color: var(--text-mid); color: var(--text); }
+  .theme-btn.active { border-color: var(--accent); color: var(--accent); background: oklch(52% 0.13 255 / 0.06); }
+  .theme-swatch {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid oklch(0% 0 0 / 0.12);
+    flex-shrink: 0;
+  }
+
+  /* footer actions */
+  .sheet-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 28px 60px 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+  }
+  .footer-note {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-ghost {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 9px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--text-mid); color: var(--text); }
+  .btn-solid {
+    background: var(--text);
+    border: none;
+    border-radius: 100px;
+    padding: 9px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--bg2);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-solid:hover { background: var(--accent); }
+
+  /* Error */
+  .error-box {
+    background: oklch(95% 0.03 25);
+    border: 1.5px solid oklch(80% 0.06 25);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-size: 14px;
+    color: oklch(38% 0.1 25);
+    margin-top: 16px;
+    max-width: 580px;
+    width: 100%;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @media (max-width: 600px) {
+    .sheet-header { padding: 36px 28px 32px; }
+    .sheet-body { padding: 0 28px; }
+    .sheet-footer { padding: 24px 28px 32px; }
+    .quote-block { padding-left: 18px; }
+  }
+
+  .pedagogy-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 520px;
+    margin-top: 44px;
+    padding: 14px 18px;
+    background: oklch(97% 0.01 75);
+    border: 1.5px solid oklch(88% 0.015 75);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    color: var(--text-mid);
+    line-height: 1.6;
+    text-align: left;
+  }
+  .pedagogy-note strong { color: var(--text); font-weight: 500; }
+
+  @media print {
+    @page { size: A4; margin: 14mm 16mm; }
+    body { background: white; }
+    .sheet-back, .sheet-footer { display: none !important; }
+    .sheet-page { padding: 0; background: white; min-height: unset; }
+    .sheet-card { box-shadow: none; border-radius: 0; width: 100%; max-width: 100%; animation: none; }
+    .sheet-header { padding: 28px 36px 22px; }
+    .sheet-body { padding: 0 36px; }
+    .sheet-section { padding: 18px 0; }
+    .section-text { font-size: 13px; line-height: 1.6; }
+    .quote-text { font-size: 15px; }
+    .sheet-title { font-size: 28px; }
+    .sources-list { gap: 6px; }
+    .source-link { padding: 8px 12px; }
+    .source-text { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+const SUGGESTIONS = [
+  "Okja", "Gorillas in the Mist", "Le Peuple migrateur",
+  "La Vache et le prisonnier", "Bambi", "Virunga",
+  "La Planète des singes", "Le Monde de Nemo"
+];
+
+function HeroPage({ onGenerate, loading, error, onResetKey }) {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef();
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const handle = () => {
+    if (query.trim() && !loading) onGenerate(query.trim());
+  };
+
+  return (
+    <div className="hero">
+      <div className="hero-label">Les animaux et nous : imaginer, connaître, comprendre l'animal</div>
+      <h1 className="hero-title">Générateur de<br/>fiches de révision</h1>
+      <p className="hero-sub">Tapez le titre d'une œuvre pour générer<br/>votre fiche en quelques secondes.</p>
+
+      <div className="search-wrap">
+        <div className="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{color:'var(--text-light)', flexShrink:0}}>
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            ref={inputRef}
+            className="search-input"
+            placeholder="Ex : Okja, Gorillas in the Mist…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handle()}
+          />
+          <button className="search-btn" onClick={handle} disabled={!query.trim() || loading}>
+            {loading ? 'Génération…' : 'Générer →'}
+          </button>
+        </div>
+        {error && <div className="error-box">⚠ {error}</div>}
+      </div>
+
+      <div className="suggestions">
+        {SUGGESTIONS.map(s => (
+          <button key={s} className="suggestion-chip" onClick={() => { setQuery(s); setTimeout(handle, 50); onGenerate(s); }}>
+            {s}
+          </button>
+        ))}
+      </div>
+
+      <div className="pedagogy-note fade-up" style={{animationDelay:'0.25s'}}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{flexShrink:0, marginTop:'1px'}}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          ⚠ L'IA invente parfois avec beaucoup de conviction. Vérifiez avant de copier.
+        </span>
+      </div>
+
+      {onResetKey && (
+        <button onClick={onResetKey} style={{marginTop:'20px', background:'none', border:'none', fontSize:'12px', color:'var(--text-light)', cursor:'pointer', textDecoration:'underline'}}>
+          Changer de clé API
+        </button>
+      )}
+    </div>
+  );
+}
+
+function LoadingPage({ title }) {
+  const msgs = [
+    `Recherche sur « ${title} »…`,
+    'Extraction des informations clés…',
+    'Rédaction du résumé…',
+    'Analyse du rapport animal et nous…',
+    'Mise en page de la fiche…',
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => Math.min(i + 1, msgs.length - 1)), 1800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="loading-page">
+      <div className="spinner"></div>
+      <div className="loading-msg">{msgs[idx]}</div>
+    </div>
+  );
+}
+
+function SourceItem({ url, label }) {
+  return (
+    <a className="source-link" href={url} target="_blank" rel="noopener noreferrer">
+      <svg className="source-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      <span className="source-text">{label || url}</span>
+    </a>
+  );
+}
+
+const THEMES = [
+  {
+    id: 'clair', label: 'Clair', swatch: '#FAFAF8',
+    vars: {
+      '--bg': 'oklch(97.5% 0.006 75)', '--bg2': 'oklch(99% 0.003 75)',
+      '--card': 'oklch(100% 0 0)', '--text': 'oklch(18% 0.008 260)',
+      '--text-mid': 'oklch(42% 0.008 260)', '--text-light': 'oklch(62% 0.008 260)',
+      '--border': 'oklch(90% 0.006 260)', '--accent': 'oklch(52% 0.13 255)',
+      '--accent-warm': 'oklch(56% 0.12 30)',
+    }
+  },
+  {
+    id: 'chaud', label: 'Chaud', swatch: '#F5EFE6',
+    vars: {
+      '--bg': 'oklch(94% 0.018 75)', '--bg2': 'oklch(96% 0.014 75)',
+      '--card': 'oklch(97% 0.012 75)', '--text': 'oklch(20% 0.01 60)',
+      '--text-mid': 'oklch(44% 0.01 60)', '--text-light': 'oklch(62% 0.01 60)',
+      '--border': 'oklch(86% 0.02 75)', '--accent': 'oklch(50% 0.14 30)',
+      '--accent-warm': 'oklch(50% 0.14 30)',
+    }
+  },
+  {
+    id: 'ardoise', label: 'Ardoise', swatch: '#E8EDF5',
+    vars: {
+      '--bg': 'oklch(93% 0.02 255)', '--bg2': 'oklch(95% 0.015 255)',
+      '--card': 'oklch(97% 0.01 255)', '--text': 'oklch(20% 0.015 260)',
+      '--text-mid': 'oklch(42% 0.015 260)', '--text-light': 'oklch(60% 0.015 260)',
+      '--border': 'oklch(85% 0.02 260)', '--accent': 'oklch(48% 0.15 260)',
+      '--accent-warm': 'oklch(52% 0.13 200)',
+    }
+  },
+  {
+    id: 'foret', label: 'Forêt', swatch: '#E6EFE8',
+    vars: {
+      '--bg': 'oklch(93% 0.018 145)', '--bg2': 'oklch(95% 0.014 145)',
+      '--card': 'oklch(97% 0.01 145)', '--text': 'oklch(20% 0.015 150)',
+      '--text-mid': 'oklch(42% 0.015 150)', '--text-light': 'oklch(60% 0.015 150)',
+      '--border': 'oklch(85% 0.022 145)', '--accent': 'oklch(46% 0.14 150)',
+      '--accent-warm': 'oklch(52% 0.12 100)',
+    }
+  },
+  {
+    id: 'sombre', label: 'Sombre', swatch: '#1C1C1E',
+    vars: {
+      '--bg': 'oklch(14% 0.008 260)', '--bg2': 'oklch(16% 0.008 260)',
+      '--card': 'oklch(18% 0.008 260)', '--text': 'oklch(93% 0.005 260)',
+      '--text-mid': 'oklch(68% 0.008 260)', '--text-light': 'oklch(50% 0.008 260)',
+      '--border': 'oklch(28% 0.008 260)', '--accent': 'oklch(68% 0.14 255)',
+      '--accent-warm': 'oklch(70% 0.12 40)',
+    }
+  },
+];
+
+function applyTheme(vars) {
+  const root = document.documentElement;
+  Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+}
+
+function SheetPage({ data, onBack, onNew }) {
+  const [activeTheme, setActiveTheme] = useState('clair');
+
+  const handleTheme = (theme) => {
+    setActiveTheme(theme.id);
+    applyTheme(theme.vars);
+  };
+
+  const handlePrint = () => window.print();
+
+  return (
+    <div className="sheet-page">
+      <button className="sheet-back" onClick={onBack}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Nouvelle recherche
+      </button>
+
+      <div className="theme-bar">
+        <span className="theme-label">Thème</span>
+        {THEMES.map(t => (
+          <button
+            key={t.id}
+            className={`theme-btn${activeTheme === t.id ? ' active' : ''}`}
+            onClick={() => handleTheme(t)}
+          >
+            <span className="theme-swatch" style={{background: t.swatch}}></span>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="sheet-card">
+        {/* HEADER */}
+        <div className="sheet-header">
+          <span className="sheet-genre-badge">{data.genre}</span>
+          <h1 className="sheet-title">{data.titre}</h1>
+          <div className="sheet-meta">
+            <span className="sheet-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {data.auteur}
+            </span>
+            <div className="sheet-meta-dot"></div>
+            <span className="sheet-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              {data.annee}
+            </span>
+          </div>
+        </div>
+
+        {/* BODY */}
+        <div className="sheet-body">
+          {/* Résumé */}
+          <div className="sheet-section">
+            <div className="section-label">Résumé</div>
+            <p className="section-text">{data.resume}</p>
+          </div>
+
+          {/* Rapport animal et nous */}
+          <div className="sheet-section">
+            <div className="section-label">Lien avec le thème</div>
+            <div className="animal-tag">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2C8 2 4 6 4 10c0 5 8 12 8 12s8-7 8-12c0-4-4-8-8-8z"/></svg>
+              Rapport animal et nous
+            </div>
+            <p className="section-text">{data.lienAnimal}</p>
+          </div>
+
+          {/* Citation */}
+          <div className="sheet-section">
+            <div className="section-label">Citation marquante</div>
+            <div className="quote-block">
+              <div className="quote-text">« {data.citation.texte} »</div>
+              {data.citation.auteur && (
+                <div className="quote-attr">— {data.citation.auteur}</div>
+              )}
+            </div>
+          </div>
+
+          {/* Sources */}
+          <div className="sheet-section">
+            <div className="section-label">Sources & ressources</div>
+            <div className="sources-list">
+              {data.sources.map((src, i) => (
+                <SourceItem key={i} url={src.url} label={src.label} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="sheet-footer">
+          <span className="footer-note">Fiche générée automatiquement — à vérifier et compléter</span>
+          <div className="btn-row">
+            <button className="btn-ghost" onClick={handlePrint}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{marginRight:'6px', verticalAlign:'middle'}}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Télécharger en PDF
+            </button>
+            <button className="btn-solid" onClick={onNew}>Nouvelle fiche →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── API ─── */
+// À remplacer par votre propre endpoint backend, ex: fetch('/api/generate', ...)
+async function callClaude(prompt) {
+  // Placeholder : branchez ici votre backend
+  throw new Error('Backend non configuré. Connectez callClaude() à votre API.');
+}
+
+/* ─── PROMPT ─── */
+function buildPrompt(titre) {
+  const currentYear = new Date().getFullYear();
+  const titreEncode = encodeURIComponent(titre);
+  return `Tu es un assistant pédagogique expert pour des étudiants en BTS. La date d'aujourd'hui est ${currentYear}.
+
+Génère une fiche de révision sur l'œuvre suivante : "${titre}".
+
+RÈGLES ABSOLUES — respecte-les sans exception :
+
+1. EXACTITUDE FACTUELLE : Ne devine jamais un nom d'auteur, de réalisateur ou une date. Si tu n'es pas certain à 100%, indique "À vérifier" pour ce champ. Mieux vaut "À vérifier" qu'une erreur.
+
+2. ŒUVRES RÉCENTES : Si l'œuvre date d'après 2023 ou si tu n'as pas de données fiables, dis-le clairement dans le résumé (ex: "Cette œuvre récente est peu documentée dans mes données — les informations suivantes sont à vérifier.").
+
+3. HOMONYMES : S'il existe plusieurs œuvres avec ce titre, prends toujours la plus récente ET la plus en lien avec la thématique animalière/naturaliste. Ne mélange jamais deux œuvres différentes.
+
+4. SOURCES — RÈGLE CRITIQUE : N'invente JAMAIS une URL spécifique. Utilise UNIQUEMENT ces formats de liens de recherche garantis fonctionnels :
+   - Wikipedia : "https://fr.wikipedia.org/w/index.php?search=${titreEncode}"
+   - Allociné : "https://www.allocine.fr/rechercher/movie/?q=${titreEncode}"
+   - Google Scholar : "https://scholar.google.fr/scholar?q=${titreEncode}"
+   - Google général : "https://www.google.com/search?q=${titreEncode}+film+documentaire"
+   Tu DOIS utiliser ces formats exacts, en adaptant seulement le paramètre q si nécessaire.
+
+Réponds UNIQUEMENT avec un JSON valide (sans markdown, sans texte avant ou après) :
+
+{
+  "titre": "Titre exact de l'œuvre",
+  "auteur": "Nom certain du réalisateur / auteur, ou 'À vérifier' si incertain",
+  "annee": "Année certaine, ou 'À vérifier' si incertaine",
+  "genre": "Genre précis (ex: Film documentaire animalier, Roman, Essai photographique…)",
+  "resume": "Résumé COURT de 2 à 3 phrases maximum, synthétique et accessible.",
+  "lienAnimal": "2 à 3 phrases maximum sur le lien avec 'Les animaux et nous : imaginer, connaître, comprendre l'animal'.",
+  "citation": {
+    "texte": "Citation réelle et vérifiable, ou une phrase représentative du propos de l'œuvre.",
+    "auteur": "Auteur de la citation"
+  },
+  "sources": [
+    { "url": "https://fr.wikipedia.org/w/index.php?search=${titreEncode}", "label": "Rechercher sur Wikipédia" },
+    { "url": "https://www.allocine.fr/rechercher/movie/?q=${titreEncode}", "label": "Rechercher sur Allociné" },
+    { "url": "https://www.google.com/search?q=${titreEncode}+documentaire+animalier", "label": "Recherche Google — Documentaires" }
+  ]
+}
+
+Ne génère aucun texte hors du JSON.`;
+}
+
+/* ─── APP ─── */
+function App() {
+  const [state, setState] = useState('home');
+  const [sheetData, setSheetData] = useState(null);
+  const [error, setError] = useState('');
+  const [currentTitle, setCurrentTitle] = useState('');
+
+  const generate = async (titre) => {
+    applyTheme(THEMES[0].vars);
+    setCurrentTitle(titre);
+    setState('loading');
+    setError('');
+    try {
+      const raw = await callClaude(buildPrompt(titre));
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('Format de réponse inattendu.');
+      const data = JSON.parse(match[0]);
+      setSheetData(data);
+      setState('sheet');
+    } catch (e) {
+      console.error(e);
+      setError(`Impossible de générer la fiche : ${e.message}. Vérifiez le titre et réessayez.`);
+      setState('home');
+    }
+  };
+
+  if (state === 'loading') return <LoadingPage title={currentTitle} />;
+  if (state === 'sheet' && sheetData) return (
+    <SheetPage
+      data={sheetData}
+      onBack={() => setState('home')}
+      onNew={() => { setSheetData(null); setState('home'); }}
+    />
+  );
+  return (
+    <HeroPage
+      onGenerate={generate}
+      loading={state === 'loading'}
+      error={error}
+      onResetKey={null}
+    />
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
