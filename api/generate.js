@@ -28,6 +28,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ content: text });
   } catch (err) {
     console.error('Erreur Gemini:', err.message);
-    return res.status(500).json({ error: 'Erreur lors de la génération de la fiche' });
+    return res.status(500).json({ error: err.message || 'Erreur inconnue' });
   }
 };
