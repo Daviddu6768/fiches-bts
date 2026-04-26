@@ -12,21 +12,24 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Prompt invalide ou trop long' });
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return res.status(500).json({ error: 'Clé API non configurée côté serveur' });
   }
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
-    );
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1024,
+        temperature: 0.3,
+      }),
+    });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
@@ -34,13 +37,13 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = data.choices?.[0]?.message?.content;
 
-    if (!text) return res.status(500).json({ error: 'Réponse vide de Gemini' });
+    if (!text) return res.status(500).json({ error: 'Réponse vide' });
 
     return res.status(200).json({ content: text });
   } catch (err) {
-    console.error('Erreur:', err.message);
+    console.error('Erreur Groq:', err.message);
     return res.status(500).json({ error: err.message });
   }
 };
