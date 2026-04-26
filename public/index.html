@@ -524,10 +524,35 @@
   }
   .pedagogy-note strong { color: var(--text); font-weight: 500; }
 
+  .editable {
+    cursor: text;
+    border-radius: 4px;
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+    transition: outline 0.15s;
+  }
+  .editable:hover { outline: 2px dashed var(--border); }
+  .editable:focus { outline: 2px solid var(--accent); }
+
+  .edit-hint {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    padding: 7px 14px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    width: fit-content;
+  }
+
   @media print {
     @page { size: A4; margin: 14mm 16mm; }
     body { background: white; }
-    .sheet-back, .sheet-footer { display: none !important; }
+    .sheet-back, .sheet-footer, .edit-hint { display: none !important; }
+    .editable { outline: none !important; cursor: default; }
     .sheet-page { padding: 0; background: white; min-height: unset; }
     .sheet-card { box-shadow: none; border-radius: 0; width: 100%; max-width: 100%; animation: none; }
     .sheet-header { padding: 28px 36px 22px; }
@@ -734,20 +759,28 @@ function SheetPage({ data, onBack, onNew }) {
         ))}
       </div>
 
+      <div className="edit-hint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Cliquez sur n'importe quel texte pour le modifier avant d'imprimer
+      </div>
+
       <div className="sheet-card">
         {/* HEADER */}
         <div className="sheet-header">
-          <span className="sheet-genre-badge">{data.genre}</span>
-          <h1 className="sheet-title">{data.titre}</h1>
+          <span className="sheet-genre-badge editable" contentEditable={true} suppressContentEditableWarning={true}>{data.genre}</span>
+          <h1 className="sheet-title editable" contentEditable={true} suppressContentEditableWarning={true}>{data.titre}</h1>
           <div className="sheet-meta">
             <span className="sheet-meta-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              {data.auteur}
+              <span className="editable" contentEditable={true} suppressContentEditableWarning={true}>{data.auteur}</span>
             </span>
             <div className="sheet-meta-dot"></div>
             <span className="sheet-meta-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              {data.annee}
+              <span className="editable" contentEditable={true} suppressContentEditableWarning={true}>{data.annee}</span>
             </span>
           </div>
         </div>
@@ -756,7 +789,7 @@ function SheetPage({ data, onBack, onNew }) {
         <div className="sheet-body">
           <div className="sheet-section">
             <div className="section-label">Résumé</div>
-            <p className="section-text">{data.resume}</p>
+            <p className="section-text editable" contentEditable={true} suppressContentEditableWarning={true}>{data.resume}</p>
           </div>
 
           <div className="sheet-section">
@@ -765,16 +798,14 @@ function SheetPage({ data, onBack, onNew }) {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2C8 2 4 6 4 10c0 5 8 12 8 12s8-7 8-12c0-4-4-8-8-8z"/></svg>
               Rapport animal et nous
             </div>
-            <p className="section-text">{data.lienAnimal}</p>
+            <p className="section-text editable" contentEditable={true} suppressContentEditableWarning={true}>{data.lienAnimal}</p>
           </div>
 
           <div className="sheet-section">
             <div className="section-label">Citation marquante</div>
             <div className="quote-block">
-              <div className="quote-text">« {data.citation.texte} »</div>
-              {data.citation.auteur && (
-                <div className="quote-attr">— {data.citation.auteur}</div>
-              )}
+              <div className="quote-text editable" contentEditable={true} suppressContentEditableWarning={true}>« {data.citation.texte} »</div>
+              <div className="quote-attr editable" contentEditable={true} suppressContentEditableWarning={true}>— {data.citation.auteur}</div>
             </div>
           </div>
 
